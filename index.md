@@ -6,4 +6,4 @@
 - [Square Around Edge of Screen](03-square)
 
 ## Projects 
-- first assigment!
+- [Interactive Scene](scene)

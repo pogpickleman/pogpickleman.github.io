@@ -13,17 +13,17 @@ function draw() {
 }
 
 function chessBoard () {
-  for (let i = 0; i < side; i += side/8) {
-    for (let j = 0; j < side; j += side/8) {
+  for (let i = 0; i < 8; i ++) {
+    for (let j = 0; j < 8; j ++) {
       
       if ((i + j) % 2 === 1) {
         fill("black");
       }
       else {
-        fill("white");
+        fill("white")
       }  
 
-      rect(i ,j, side/8, side/8);
+      rect(i * side/8 ,j * side/8, side/8, side/8);
     }
   }
 }
