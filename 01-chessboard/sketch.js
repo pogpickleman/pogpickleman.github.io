@@ -20,7 +20,7 @@ function chessBoard () {
         fill("black");
       }
       else {
-        fill("white")
+        fill("white");
       }  
 
       rect(i * side/8 ,j * side/8, side/8, side/8);
