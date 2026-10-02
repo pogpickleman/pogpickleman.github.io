@@ -1,64 +1,69 @@
-// Project Title
-// Your Name
-// Date
+// AURA GAME 2
+// IK
+// 11/1/2026
 //
 // Extra for Experts:
-// - describe what you did to take this project "above and beyond"
+// - image manipulations in the shinaRotate() function
+// WIP game!
+
+// variables
 const MENU = "menu";
 const RUNNING = "running";
 let gameState = MENU;
-
-
 let playButtonWidth = 500;
 let playButtonHeight = 250;
 let playButtonRadius = 20;
 let centreX;
 let centreY;
-let mouseDistanceFromPlayButton;
 let shinaWidth = 100;
 let shinaHeight = 100;
 let shinaX;
 let shinaY;
 let shinaDX = 10;
 let shinaDY = 10;
-let shinaCenterX = shinaX + shinaWidth/2;
-let shinaCenterY = shinaY + shinaHeight/2;
 let shina;
 
-async function loadImgs() {
+// load assets
+async function loadAssets() {
   shina = await loadImage("assets/imgs/shina.png");
-}
-
-async function setup() {
-  createCanvas(windowWidth, windowHeight);
+  song = await loadSound('assets/music/title_theme.mp3');
   font = await loadFont('assets/static/NotoSans-Bold.ttf');
   textFont(font);
-  loadImgs();
-  shinaX = windowWidth/2 - shinaWidth/2;
-  shinaY = windowHeight/2 - shinaHeight/2;
+  song.play();
+}
+
+// setup screen
+async function setup() {
+  createCanvas(windowWidth, windowHeight);
+  loadAssets();
+  imageMode(CENTER);
+  rectMode(CENTER);
+  shinaX = windowWidth/2
+  shinaY = windowHeight/2
 }
 
 function draw() {
   background(255);
-
+  // check for game states
   if (gameState === MENU) {
-    playButton();
-    titleText();
+    mainMenu();
   }
   else if (gameState === RUNNING) {
+    greenBackdrop(); 
     gameRunning();
   }
-
 }
 
+// functions for while in the main menu
 function mainMenu() {
-  
+  playButton();
+  titleText();
 }
 
-
+// button to press play and begin game
 function playButton() {
-  centreX = windowWidth/2 - playButtonWidth/2;
-  centreY = windowHeight/2 - playButtonHeight/2;
+  centreX = windowWidth/2
+  centreY = windowHeight/2
   fill('red');
   noStroke();
   rect(centreX, centreY, playButtonWidth, playButtonHeight, playButtonRadius);
@@ -66,11 +71,9 @@ function playButton() {
   textSize(100);
   textAlign(CENTER, CENTER);
   text("PLAY", windowWidth/2, windowHeight/2);
-
-  // mouseDistanceFromPlayButton = dist(centreX + 250, centreY + 125, mouseX, mouseY);
-  // console.log(mouseDistanceFromPlayButton);
 }
 
+// game title text
 function titleText() {
   fill(255);
   stroke(0);
@@ -78,23 +81,31 @@ function titleText() {
   text("AURA GAME 2", windowWidth/2, windowHeight/2 - 300);
 }
 
+
 function mousePressed() {
-  if (mouseX > centreX && mouseX < windowWidth/2 + playButtonWidth/2 && mouseY > centreY && mouseY < windowHeight/2 + playButtonHeight/2) {
+  // check if you pressed play
+  if (
+    mouseX > centreX - playButtonWidth / 2 &&
+    mouseX < centreX + playButtonWidth / 2 &&
+    mouseY > centreY - playButtonHeight / 2 &&
+    mouseY < centreY + playButtonHeight / 2
+  ) {
     gameState = RUNNING;
   }
 }
 
+// functions to run during the game
 function gameRunning() {
   shinaFunc();
-
 }
 
+// functions for shina
 function shinaFunc() {
-  image(shina, shinaX, shinaY, shinaWidth, shinaHeight);
   shinaMove();
   shinaRotate();
 }
 
+// move shina
 function shinaMove() {
   if (keyIsDown("a")) {
     shinaX -= shinaDX;
@@ -110,6 +121,29 @@ function shinaMove() {
   }
 }
 
+// rotate shina towards mouse
 function shinaRotate() {
-  
+  let angle = atan2(mouseY - shinaY, mouseX - shinaX) + HALF_PI + 0.1;
+  push();
+  translate(shinaX, shinaY);
+  rotate(angle);
+  image(shina, 0, 0, shinaWidth, shinaHeight)
+  pop();
 }
+
+// create a checkerboard background
+function greenBackdrop() {
+  noStroke();
+  for (let y = 0; y < height; y += 50) {
+        for (let x = 0; x < width; x += 50) {
+      if ((x / 50 + y / 50) % 2 === 0) {
+        fill(120, 195, 90); 
+      } else {
+        fill(105, 180, 75); 
+      }
+      rect(x, y, 50, 50);
+    }
+  }
+}
+
+
