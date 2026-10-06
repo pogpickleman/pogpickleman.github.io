@@ -5,6 +5,7 @@
 - [Circles!](02-circles)
 - [Square Around Edge of Screen](03-square)
 - [Traffic lights](05-traffic)
+- [Bouncing Circles](06-circle-bounce)
 
 ## Projects 
 - [Interactive Scene](scene)
