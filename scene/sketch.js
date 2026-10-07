@@ -16,20 +16,13 @@ let playButtonHeight = 250;
 let playButtonRadius = 20;
 let centreX;
 let centreY;
-let shinaWidth = 100;
-let shinaHeight = 100;
-let shinaDX = 10;
-let shinaDY = 10;
 let shina;
-let shinaHealth;
 
 
 let appleX;
 let appleY;
 let appleHeight = 20;
 let appleWidth = 20;
-
-let player;
 
 
 globalThis.instances = [];
@@ -51,9 +44,8 @@ async function setup() {
   imageMode(CENTER);
   rectMode(CENTER);
 
-  player = {
-    pos: createVector(width/2, height/2)
-  };
+  player = new Player();
+
 }
 
 // apple projectile class
@@ -79,6 +71,38 @@ class Apple {
   }
 }
 
+class Player {
+  constructor() {
+    this.pos = createVector(width/2, height/2);
+    this.width = 100;
+    this.height = 100;
+    this.dx = 10;
+    this.dy = 10;
+    this.health = 0;
+  }
+
+  move() {
+    if (keyIsDown("a")) {
+      this.pos.x -= this.dx;
+    }
+    if (keyIsDown("d")) {
+      this.pos.x += this.dx;
+    }
+    if (keyIsDown("w")) {
+      this.pos.y -= this.dy;
+    }
+    if (keyIsDown("s")) {
+      this.pos.y += this.dy;
+    }
+  }
+
+  static updateAll() {
+    globalThis.instances.forEach((instance) => {
+      instance.move();
+    });
+  }
+}
+
 // draw loop
 function draw() {
   background(255);
@@ -90,6 +114,7 @@ function draw() {
     greenBackdrop(); 
     gameRunning();
     Apple.updateAll();
+    Player.updateAll();
   }
 }
 
@@ -142,26 +167,12 @@ function gameRunning() {
 
 // functions for shina
 function shinaFunc() {
-  shinaMove();
   shinaRotate();
   shinaShoot();
 }
 
-// move shina
-function shinaMove() {
-  if (keyIsDown("a")) {
-    player.pos.x -= shinaDX;
-  }
-  if (keyIsDown("d")) {
-    player.pos.x += shinaDX;
-  }
-  if (keyIsDown("w")) {
-    player.pos.y -= shinaDY;
-  }
-  if (keyIsDown("s")) {
-    player.pos.y += shinaDY;
-  }
-}
+
+
 
 // rotate shina towards mouse
 function shinaRotate() {
@@ -169,7 +180,7 @@ function shinaRotate() {
   push();
   translate(player.pos.x, player.pos.y);
   rotate(angle);
-  image(shina, 0, 0, shinaWidth, shinaHeight);
+  image(shina, 0, 0, player.width, player.height);
   pop();
 }
 
