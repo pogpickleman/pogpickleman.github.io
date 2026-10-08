@@ -45,6 +45,7 @@ async function setup() {
   rectMode(CENTER);
 
   player = new Player();
+  globalThis.instances.push(player);
 
 }
 
