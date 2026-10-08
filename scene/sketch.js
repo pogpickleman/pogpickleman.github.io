@@ -10,27 +10,29 @@
 const MENU = "menu";
 const RUNNING = "running";
 const APPLESPEED = 5;
+const PLAYBUTTONWIDTH = 500;
+const PLAYBUTTONHEIGHT = 250;
+const PLAYBUTTONRADIUS = 20;
 let gameState = MENU;
-let playButtonWidth = 500;
-let playButtonHeight = 250;
-let playButtonRadius = 20;
+
 let centreX;
 let centreY;
 let shina;
 
-
-let appleX;
-let appleY;
-let appleHeight = 20;
-let appleWidth = 20;
-
+let apple = {
+  x: undefined,
+  y: undefined,
+  h: 20,
+  w: 20,
+  img: undefined,
+};
 
 globalThis.instances = [];
 
 // load assets
 async function loadAssets() {
   shina = await loadImage("assets/imgs/shina.png");
-  apple = await loadImage("assets/imgs/apple.png");
+  apple.img = await loadImage("assets/imgs/apple.png");
   song = await loadSound('assets/music/title_theme.mp3');
   font = await loadFont('assets/static/NotoSans-Bold.ttf');
   textFont(font);
@@ -54,11 +56,11 @@ class Apple {
   constructor() {
     this.x = player.pos.x;
     this.y = player.pos.y;
-    image(apple, this.x, this.y, appleWidth, appleHeight);
+    image(apple.img, this.x, this.y, apple.w, apple.h);
   }
 
   move() {
-    image(apple, this.x, this.y, appleWidth, appleHeight);
+    image(apple.img, this.x, this.y, apple.w, apple.h);
     // let mouseDir = createVector(mouseX, mouseY).sub(player.pos);
     // mouseDir.setMag(30);
     // let dirOffset = p5.Vector.add(player.pos, mouseDir);
@@ -97,9 +99,21 @@ class Player {
     }
   }
 
+  // rotate shina towards mouse
+  rotate() {
+    let angle = atan2(mouseY - this.pos.y, mouseX - this.pos.x) + HALF_PI + 0.1;
+    push();
+    translate(this.pos.x, this.pos.y);
+    rotate(angle);
+    image(shina, 0, 0, this.width, this.height);
+    pop();
+  }
+
+
   static updateAll() {
     globalThis.instances.forEach((instance) => {
       instance.move();
+      instance.rotate();
     });
   }
 }
@@ -131,7 +145,7 @@ function playButton() {
   centreY = windowHeight/2;
   fill('red');
   noStroke();
-  rect(centreX, centreY, playButtonWidth, playButtonHeight, playButtonRadius);
+  rect(centreX, centreY, PLAYBUTTONWIDTH, PLAYBUTTONHEIGHT, PLAYBUTTONRADIUS);
   fill('black');
   textSize(100);
   textAlign(CENTER, CENTER);
@@ -150,10 +164,10 @@ function titleText() {
 function mousePressed() {
   // check if you pressed play
   if (
-    mouseX > centreX - playButtonWidth / 2 &&
-    mouseX < centreX + playButtonWidth / 2 &&
-    mouseY > centreY - playButtonHeight / 2 &&
-    mouseY < centreY + playButtonHeight / 2 &&
+    mouseX > centreX - PLAYBUTTONWIDTH / 2 &&
+    mouseX < centreX + PLAYBUTTONWIDTH / 2 &&
+    mouseY > centreY - PLAYBUTTONHEIGHT / 2 &&
+    mouseY < centreY + PLAYBUTTONHEIGHT / 2 &&
     gameState === MENU
   ) {
     gameState = RUNNING;
@@ -168,22 +182,13 @@ function gameRunning() {
 
 // functions for shina
 function shinaFunc() {
-  shinaRotate();
   shinaShoot();
 }
 
 
 
 
-// rotate shina towards mouse
-function shinaRotate() {
-  let angle = atan2(mouseY - player.pos.y, mouseX - player.pos.x) + HALF_PI + 0.1;
-  push();
-  translate(player.pos.x, player.pos.y);
-  rotate(angle);
-  image(shina, 0, 0, player.width, player.height);
-  pop();
-}
+
 
 // shoot apples
 function shinaShoot() {
