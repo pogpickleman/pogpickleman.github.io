@@ -19,20 +19,21 @@ let centreX;
 let centreY;
 let shina;
 
-let apple = {
-  x: undefined,
-  y: undefined,
-  h: 20,
-  w: 20,
-  img: undefined,
-};
+// let apple = {
+//   x: undefined,
+//   y: undefined,
+//   h: 20,
+//   w: 20,
+//   img: undefined,
+// };
 
-globalThis.instances = [];
+globalThis.players = [];
+globalThis.apples = [];
 
 // load assets
 async function loadAssets() {
   shina = await loadImage("assets/imgs/shina.png");
-  apple.img = await loadImage("assets/imgs/apple.png");
+  appleImg = await loadImage("assets/imgs/apple.png");
   song = await loadSound('assets/music/title_theme.mp3');
   font = await loadFont('assets/static/NotoSans-Bold.ttf');
   textFont(font);
@@ -46,29 +47,33 @@ async function setup() {
   imageMode(CENTER);
   rectMode(CENTER);
 
-  player = new Player();
-  globalThis.instances.push(player);
+  let player = new Player();
+  globalThis.players.push(player);
 
 }
 
 // apple projectile class
 class Apple {
-  constructor() {
-    this.x = player.pos.x;
-    this.y = player.pos.y;
-    image(apple.img, this.x, this.y, apple.w, apple.h);
+  constructor(player) {
+    this.pos = createVector(player.pos.x, player.pos.y);
+    origin = player;
+    this.dir = 0;
   }
 
   move() {
-    image(apple.img, this.x, this.y, apple.w, apple.h);
-    // let mouseDir = createVector(mouseX, mouseY).sub(player.pos);
-    // mouseDir.setMag(30);
-    // let dirOffset = p5.Vector.add(player.pos, mouseDir);
-    // apple.dir = mouseDir;
-    // apple.dir.setMag(APPLESPEED);
+    
+    image(appleImg, this.pos.x, this.pos.y, 100, 100);
+
+    let mouseDir = createVector(mouseX, mouseY).sub(origin.pos);
+    mouseDir.setMag(30);
+    let dirOffset = p5.Vector.add(origin.pos, mouseDir);
+    this.dir = mouseDir;
+    this.dir.setMag(APPLESPEED);
+
+  
   }
   static updateAll() {
-    globalThis.instances.forEach((instance) => {
+    globalThis.apples.forEach((instance) => {
       instance.move();
     });
   }
@@ -77,25 +82,23 @@ class Apple {
 class Player {
   constructor() {
     this.pos = createVector(width/2, height/2);
-    this.width = 100;
-    this.height = 100;
-    this.dx = 10;
-    this.dy = 10;
+    this.dim = createVector(100, 100);
+    this.vel = createVector(10,10);
     this.health = 0;
   }
 
   move() {
     if (keyIsDown("a")) {
-      this.pos.x -= this.dx;
+      this.pos.x -= this.vel.x;
     }
     if (keyIsDown("d")) {
-      this.pos.x += this.dx;
+      this.pos.x += this.vel.x;
     }
     if (keyIsDown("w")) {
-      this.pos.y -= this.dy;
+      this.pos.y -= this.vel.y;
     }
     if (keyIsDown("s")) {
-      this.pos.y += this.dy;
+      this.pos.y += this.vel.y;
     }
   }
 
@@ -105,15 +108,23 @@ class Player {
     push();
     translate(this.pos.x, this.pos.y);
     rotate(angle);
-    image(shina, 0, 0, this.width, this.height);
+    image(shina, 0, 0, this.dim.x, this.dim.y);
     pop();
   }
 
+  // shoot apples
+  shoot() {
+    if (keyIsDown(" ")) {
+      let apple = new Apple(this);
+      globalThis.apples.push(apple);
+    }
+  }
 
   static updateAll() {
-    globalThis.instances.forEach((instance) => {
+    globalThis.players.forEach((instance) => {
       instance.move();
       instance.rotate();
+      instance.shoot();
     });
   }
 }
@@ -128,8 +139,9 @@ function draw() {
   else if (gameState === RUNNING) {
     greenBackdrop(); 
     gameRunning();
-    Apple.updateAll();
     Player.updateAll();
+
+    Apple.updateAll();
   }
 }
 
@@ -177,24 +189,6 @@ function mousePressed() {
 
 // functions to run during the game
 function gameRunning() {
-  shinaFunc();
-}
-
-// functions for shina
-function shinaFunc() {
-  shinaShoot();
-}
-
-
-
-
-
-
-// shoot apples
-function shinaShoot() {
-  if (keyIsDown(" ")) {
-    globalThis.instances.push(new Apple);
-  }
 }
 
 
