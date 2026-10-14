@@ -56,19 +56,25 @@ async function setup() {
 class Apple {
   constructor(player) {
     this.pos = createVector(player.pos.x, player.pos.y);
+    this.dim = createVector(100,100);
     origin = player;
     this.dir = 0;
   }
 
   move() {
     
-    image(appleImg, this.pos.x, this.pos.y, 100, 100);
+    
+    let mouse = createVector(mouseX , mouseY);
+    let dist = mouse.dist(this.pos);
+    let mappedDist = map(dist, 100, 0, 1.5, 0.5);
+    mouse.sub(this.pos);
+    mouse.normalize();
+    mouse.mult(mappedDist);
+    this.pos.add(mouse);
+    image(appleImg, this.pos.x, this.pos.y, this.dim.x, this.dim.y);
 
-    let mouseDir = createVector(mouseX, mouseY).sub(origin.pos);
-    mouseDir.setMag(30);
-    let dirOffset = p5.Vector.add(origin.pos, mouseDir);
-    this.dir = mouseDir;
-    this.dir.setMag(APPLESPEED);
+
+
 
   
   }
