@@ -18,6 +18,8 @@ let gameState = MENU;
 let centreX;
 let centreY;
 let shina;
+let time = 0;
+let deltaTime = 0.01;
 
 // let apple = {
 //   x: undefined,
@@ -58,25 +60,27 @@ class Apple {
     this.pos = createVector(player.pos.x, player.pos.y);
     this.dim = createVector(100,100);
     origin = player;
-    this.dir = 0;
   }
 
   move() {
-    
-    
-    let mouse = createVector(mouseX , mouseY);
-    let dist = mouse.dist(this.pos);
-    let mappedDist = map(dist, 100, 0, 1.5, 0.5);
-    mouse.sub(this.pos);
-    mouse.normalize();
-    mouse.mult(mappedDist);
-    this.pos.add(mouse);
+    let target =  createVector(mouseX - origin.pos.x, mouseY - origin.pos.y);
+    target.normalize();
+
+    this.pos = this.pos + target * 0.0001 * 0.00001;
+
     image(appleImg, this.pos.x, this.pos.y, this.dim.x, this.dim.y);
 
 
+    
+    // let mouse = createVector(mouseX , mouseY);
+    // let dist = mouse.dist(this.pos);
+    // let mappedDist = map(dist, 100, 0, 1.5, 0.5);
+    // mouse.sub(this.pos);
+    // mouse.normalize();
+    // mouse.mult(mappedDist);
+    // this.pos.add(mouse);
+    // image(appleImg, this.pos.x, this.pos.y, this.dim.x, this.dim.y);
 
-
-  
   }
   static updateAll() {
     globalThis.apples.forEach((instance) => {
@@ -146,8 +150,9 @@ function draw() {
     greenBackdrop(); 
     gameRunning();
     Player.updateAll();
-
     Apple.updateAll();
+    time += deltaTime;
+
   }
 }
 
