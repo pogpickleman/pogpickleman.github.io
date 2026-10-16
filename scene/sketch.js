@@ -9,11 +9,13 @@
 // variables
 const MENU = "menu";
 const RUNNING = "running";
-const APPLESPEED = 5;
+const APPLESPEED = 10;
 const PLAYBUTTONWIDTH = 500;
 const PLAYBUTTONHEIGHT = 250;
 const PLAYBUTTONRADIUS = 20;
 let gameState = MENU;
+
+
 
 let centreX;
 let centreY;
@@ -60,16 +62,30 @@ class Apple {
     this.pos = createVector(player.pos.x, player.pos.y);
     this.dim = createVector(100,100);
     origin = player;
+
+    this.mouse = createVector(mouseX, mouseY);
+    this.mouse.sub(this.pos);
+    this.mouse.normalize();
+    this.mouse.mult(APPLESPEED);
+    this.angle = atan2(mouseY - this.pos.y, mouseX - this.pos.x) + HALF_PI;
+
   }
 
   move() {
-    let target =  createVector(mouseX - origin.pos.x, mouseY - origin.pos.y);
-    target.normalize();
+    this.pos.add(this.mouse);
+    push();
+    translate(this.pos.x, this.pos.y);
+    rotate(this.angle);
+    image(appleImg, 0, 0, this.dim.x, this.dim.y);
+    pop();
 
-    this.pos = this.pos + target * 0.0001 * 0.00001;
 
-    image(appleImg, this.pos.x, this.pos.y, this.dim.x, this.dim.y);
 
+    // this.target = p5.Vector.sub(mouse, this.pos);
+    // this.target.normalize();
+    // this.d = p5.Vector.dist(mouse, this.pos);
+    // this.pos += this.target * 0.1;
+    // image(appleImg, this.pos.x, this.pos.y, this.dim.x, this.dim.y);
 
     
     // let mouse = createVector(mouseX , mouseY);
@@ -151,7 +167,6 @@ function draw() {
     gameRunning();
     Player.updateAll();
     Apple.updateAll();
-    time += deltaTime;
 
   }
 }
