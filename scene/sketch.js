@@ -62,7 +62,6 @@ class Apple {
   constructor(player) {
     this.pos = createVector(player.pos.x, player.pos.y);
     this.dim = createVector(100,100);
-    origin = player;
 
     this.mouse = createVector(mouseX, mouseY);
     this.mouse.sub(this.pos);
