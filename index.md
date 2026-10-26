@@ -11,4 +11,5 @@
 - [Collision Library Demo](09-collision)
 
 ## Projects 
-- [Interactive Scene](scene)
+- [Interactive Scene](auragame)
+- [Object Notation](auragame)

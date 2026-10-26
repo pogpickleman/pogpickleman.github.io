@@ -2,8 +2,9 @@
 // IK
 // 11/1/2026
 //
+// object notation project
 // Extra for Experts:
-// - image manipulations in the shinaRotate() function
+// - using python classes as a way to store entities
 // WIP game!
 
 // variables
