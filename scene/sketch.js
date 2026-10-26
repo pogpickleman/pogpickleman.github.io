@@ -10,13 +10,9 @@
 const MENU = "menu";
 const RUNNING = "running";
 const APPLESPEED = 10;
-const PLAYBUTTONWIDTH = 500;
-const PLAYBUTTONHEIGHT = 250;
-const PLAYBUTTONRADIUS = 20;
+
 
 let gameState = MENU;
-let centreX;
-let centreY;
 let shina;
 
 let playButtonData = {
@@ -66,7 +62,6 @@ class Apple {
   constructor(player) {
     this.pos = createVector(player.pos.x, player.pos.y);
     this.dim = createVector(100,100);
-    origin = player;
 
     this.mouse = createVector(mouseX, mouseY);
     this.mouse.sub(this.pos);
@@ -84,6 +79,11 @@ class Apple {
     image(appleImg, 0, 0, this.dim.x, this.dim.y);
     pop();
 
+
+    if (this.pos.x > width + this.dim.x || this.pos.x <= 0 - this.dim.x || this.pos.y >= height + this.dim.y|| this.pos.y <= 0 - this.dim.y) {
+      let index = globalThis.apples.indexOf(this);
+      globalThis.apples.splice(index, 1);
+    }
 
 
     // this.target = p5.Vector.sub(mouse, this.pos);
@@ -103,6 +103,8 @@ class Apple {
     // image(appleImg, this.pos.x, this.pos.y, this.dim.x, this.dim.y);
 
   }
+
+
   static updateAll() {
     globalThis.apples.forEach((instance) => {
       instance.move();
@@ -146,9 +148,15 @@ class Player {
   // shoot apples
   shoot() {
     if (keyIsDown(" ")) {
-      let apple = new Apple(this);
-      globalThis.apples.push(apple);
+      if (ms - lastAppleShot >= 10) {
+        lastAppleShot = ms;
+        let apple = new Apple(this);
+        globalThis.apples.push(apple);
+
+      }
     }
+
+
   }
 
   static updateAll() {
@@ -279,12 +287,27 @@ function mousePressed() {
     gameState === MENU
   ) {
     gameState = RUNNING;
-    shinaHealth = 100;
+    resetGame();
+
   }
+}
+
+function pauseGame() {
+  
+}
+
+
+function resetGame() {
+  shinaHealth = 100;
+  time = 0;
+  lastAppleShot = 0;
+
 }
 
 // functions to run during the game
 function gameRunning() {
+  ms = millis();
+  console.log(globalThis.apples);
 }
 
 
