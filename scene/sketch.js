@@ -13,35 +13,37 @@ const APPLESPEED = 10;
 const PLAYBUTTONWIDTH = 500;
 const PLAYBUTTONHEIGHT = 250;
 const PLAYBUTTONRADIUS = 20;
+
 let gameState = MENU;
-
-
-
 let centreX;
 let centreY;
 let shina;
-let time = 0;
-let deltaTime = 0.01;
 
-// let apple = {
-//   x: undefined,
-//   y: undefined,
-//   h: 20,
-//   w: 20,
-//   img: undefined,
-// };
+let playButtonData = {
+  x: 0,
+  y: 0,
+  width: 500,
+  height: 250,
+  radius: 20,
+  colour: "red",
+  text: "PLAY"
+
+}
 
 globalThis.players = [];
 globalThis.apples = [];
+globalThis.skeletons = [];
 
 // load assets
 async function loadAssets() {
   shina = await loadImage("assets/imgs/shina.png");
   appleImg = await loadImage("assets/imgs/apple.png");
+  skeletonImg = await loadImage("assets/imgs/skeleton.png");
+
   song = await loadSound('assets/music/title_theme.mp3');
   font = await loadFont('assets/static/NotoSans-Bold.ttf');
   textFont(font);
-  song.play();
+  // song.play();
 }
 
 // setup screen
@@ -51,9 +53,12 @@ async function setup() {
   imageMode(CENTER);
   rectMode(CENTER);
 
+  await loadAssets();
+
   let player = new Player();
   globalThis.players.push(player);
-
+  let skeleton = new Skeleton();
+  globalThis.skeletons.push(skeleton);
 }
 
 // apple projectile class
@@ -155,8 +160,58 @@ class Player {
   }
 }
 
+class Skeleton {
+  constructor() {
+
+    let side = floor(random(4));
+    if (side === 0) {
+      this.pos = createVector(random(width), 0);
+    }
+    else if (side === 1) {
+      this.pos = createVector(width, random(height));
+    }
+    else if (side === 2) {
+      this.pos = createVector(random(width), height);
+    }
+    else {
+      this.pos = createVector(0, random(height));
+    }
+
+    this.dim = createVector(100, 100);
+    this.speed = 2;
+  }
+
+  move(player) {
+    let direction = p5.Vector.sub(player.pos, this.pos);
+    direction.normalize();
+    direction.mult(this.speed);
+    this.pos.add(direction);
+
+
+    let angle = atan2(player.pos.y - this.pos.y, player.pos.x - this.pos.x) + HALF_PI + 0.1;
+
+    push();
+    translate(this.pos.x, this.pos.y);
+    rotate(angle);
+    image(skeletonImg, 0, 0, this.dim.x, this.dim.y);
+    pop();
+  }
+
+  static updateAll() {
+    globalThis.skeletons.forEach((instance) => {
+
+      if (globalThis.players.length > 0) {
+        instance.move(globalThis.players[0]);
+      }
+    });
+  }
+}
+
+
 // draw loop
 function draw() {
+
+
   background(255);
   // check for game states
   if (gameState === MENU) {
@@ -167,6 +222,7 @@ function draw() {
     gameRunning();
     Player.updateAll();
     Apple.updateAll();
+    Skeleton.updateAll();
 
   }
 }
@@ -179,15 +235,29 @@ function mainMenu() {
 
 // button to press play and begin game
 function playButton() {
-  centreX = windowWidth/2;
-  centreY = windowHeight/2;
-  fill('red');
+  playButtonData.x = windowWidth / 2;
+  playButtonData.y = windowHeight / 2;
+
+  fill(playButtonData.colour);
   noStroke();
-  rect(centreX, centreY, PLAYBUTTONWIDTH, PLAYBUTTONHEIGHT, PLAYBUTTONRADIUS);
+
+  rect(
+    playButtonData.x,
+    playButtonData.y,
+    playButtonData.width,
+    playButtonData.height,
+    playButtonData.radius
+  );
+
+
   fill('black');
   textSize(100);
   textAlign(CENTER, CENTER);
-  text("PLAY", windowWidth/2, windowHeight/2);
+  text(
+    playButtonData.text,
+    playButtonData.x,
+    playButtonData.y
+  );
 }
 
 // game title text
@@ -202,10 +272,10 @@ function titleText() {
 function mousePressed() {
   // check if you pressed play
   if (
-    mouseX > centreX - PLAYBUTTONWIDTH / 2 &&
-    mouseX < centreX + PLAYBUTTONWIDTH / 2 &&
-    mouseY > centreY - PLAYBUTTONHEIGHT / 2 &&
-    mouseY < centreY + PLAYBUTTONHEIGHT / 2 &&
+    mouseX > playButtonData.x - playButtonData.width / 2 &&
+    mouseX < playButtonData.x + playButtonData.width / 2 &&
+    mouseY > playButtonData.y - playButtonData.width / 2 &&
+    mouseY < playButtonData.y + playButtonData.width / 2 &&
     gameState === MENU
   ) {
     gameState = RUNNING;
@@ -233,5 +303,3 @@ function greenBackdrop() {
     }
   }
 }
-
-
