@@ -5,7 +5,7 @@
 //
 // Object notation project
 // Extra for Experts:
-// - Using image manipulations in the shinaRotate() function
+// Using classes to store the player, projectiles, and enemies
 // WIP game!
 
 // game states
