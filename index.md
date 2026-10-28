@@ -9,6 +9,8 @@
 - [Perlin Noise](07-noise)
 - [Terrain Generation](08-terrain)
 - [Collision Library Demo](09-collision)
+- [Grid Demo](12-grid)
+- [Rectangular Grid](13-rect-grid)
 
 ## Projects 
 - [Interactive Scene](auragame)

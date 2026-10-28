@@ -1,5 +1,5 @@
 
- // AURA GAME 2
+// AURA GAME 2
 // IK
 // 11/1/2026
 //
@@ -242,7 +242,7 @@ class Player {
 
     if (healthRatio > 0) {
       rect(
-        barX - barWidth / 2 + (barWidth * healthRatio) / 2,
+        barX - barWidth / 2 + barWidth * healthRatio / 2,
         barY,
         barWidth * healthRatio,
         barHeight,
