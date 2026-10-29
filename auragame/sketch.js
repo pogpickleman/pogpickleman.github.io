@@ -14,6 +14,7 @@ const RUNNING = "running";
 
 // player settings
 const APPLESPEED = 10;
+const APPLEDMG = 1;
 const PLAYER_MAX_HEALTH = 100;
 
 // enemy spawning settings
@@ -25,10 +26,20 @@ const ENEMY_TYPES = {
   skeleton: {
     damage: 5,
     speed: 2,
+    health: 5,
     hitboxSize: 30,
     imageSize: 100,
     damageCooldown: 500
   },
+
+  bat: {
+    damage: 5,
+    speed: 5,
+    health: 1,
+    hitboxSize: 30,
+    imageSize: 100,
+    damageCooldown: 500
+  }
 
 };
 
@@ -138,14 +149,23 @@ class Apple {
 
       if (hit) {
         // remove enemy and apple
-        globalThis.skeletons.splice(i, 1);
+        globalThis.skeletons[i].health -= APPLEDMG;
         let appleIndex = globalThis.apples.indexOf(this);
 
         if (appleIndex !== -1) {
           globalThis.apples.splice(appleIndex, 1);
         }
 
-        return;
+  
+        if (globalThis.skeletons[i].health <= 0) {
+          globalThis.skeletons.splice(i, 1);
+
+          if (appleIndex !== -1) {
+            globalThis.apples.splice(appleIndex, 1);
+          }
+
+
+        }
       }
     }
   }
@@ -330,6 +350,7 @@ class Enemy {
     this.speed = this.settings.speed;
     this.hitboxSize = this.settings.hitboxSize;
     this.damage = this.settings.damage;
+    this.health = this.settings.health;
     this.damageCooldown = this.settings.damageCooldown;
 
     this.lastDamageTime = -Infinity;
