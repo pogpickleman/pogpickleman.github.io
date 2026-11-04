@@ -13,8 +13,6 @@ const MENU = "menu";
 const RUNNING = "running";
 
 // player settings
-const APPLESPEED = 10;
-const APPLEDMG = 1;
 const PLAYER_MAX_HEALTH = 100;
 
 // enemy spawning settings
@@ -29,7 +27,6 @@ const ENEMY_TYPES = {
     health: 5,
     hitboxSize: 40,
     imageSize: 100,
-    damageCooldown: 500
   },
 
   bat: {
@@ -38,10 +35,19 @@ const ENEMY_TYPES = {
     health: 1,
     hitboxSize: 30,
     imageSize: 100,
-    damageCooldown: 500
   }
-
 };
+
+const PROJECTILES = {
+  apple: {
+    speed: 25,
+    damage: 3,
+    delay: 400,
+    imageSize: 100,
+  }
+};
+
+
 
 let gameState = MENU;
 
@@ -93,16 +99,27 @@ async function setup() {
   globalThis.players.push(player);
 }
 
-// apple projectile class
-class Apple {
-  constructor(player) {
+// projectile class
+class Projectile {
+  constructor(type, image, player) {
+    this.type = type;
+    this.settings = PROJECTILES[type];
+    this.img = image;
+ 
+
+    this.dim = createVector(
+      this.settings.imageSize,
+      this.settings.imageSize
+    );
+
+    this.speed = this.settings.speed;
+
     this.pos = createVector(player.pos.x, player.pos.y);
-    this.dim = createVector(100, 100);
 
     this.velocity = createVector(mouseX, mouseY);
     this.velocity.sub(this.pos);
     this.velocity.normalize();
-    this.velocity.mult(APPLESPEED);
+    this.velocity.mult(this.speed);
 
     this.angle =
       atan2(mouseY - this.pos.y, mouseX - this.pos.x) + HALF_PI;
@@ -119,7 +136,7 @@ class Apple {
     image(appleImg, 0, 0, this.dim.x, this.dim.y);
     pop();
 
-    // remove apple if it leaves the canvas
+    // remove projectile if it leaves the canvas
     if (
       this.pos.x > width + this.dim.x ||
       this.pos.x < -this.dim.x ||
@@ -148,8 +165,8 @@ class Apple {
         this.pos.y - appleSize / 2 < enemy.pos.y + enemySize / 2;
 
       if (hit) {
-        // remove enemy and apple
-        enemy.health -= APPLEDMG;
+        // remove enemy and projectile
+        enemy.health -= PROJECTILES.apple.damage;
         let appleIndex = globalThis.apples.indexOf(this);
 
         if (appleIndex !== -1) {
@@ -181,11 +198,13 @@ class Apple {
 class Player {
   constructor() {
     this.pos = createVector(width / 2, height / 2);
-    this.dim = createVector(100, 100);
+    this.width = 100;
+    this.height = 100;
+    this.dim = createVector(this.width, this.height);
+
     this.vel = createVector(10, 10);
 
     this.health = PLAYER_MAX_HEALTH;
-    this.lastDamageTime = -Infinity;
   }
 
   move() {
@@ -301,11 +320,11 @@ class Player {
   // shoot apples
   shoot() {
     if (keyIsDown(' ')) {
-      if (ms - lastAppleShot >= 40) {
+      if (ms - lastAppleShot >= PROJECTILES.apple.delay) {
         lastAppleShot = ms;
 
-        let apple = new Apple(this);
-        globalThis.apples.push(apple);
+        let projectile = new Projectile("apple", appleImg, this);
+        globalThis.apples.push(projectile);
       }
     }
   }
@@ -351,15 +370,14 @@ class Enemy {
     this.hitboxSize = this.settings.hitboxSize;
     this.damage = this.settings.damage;
     this.health = this.settings.health;
-    this.damageCooldown = this.settings.damageCooldown;
 
-    this.lastDamageTime = -Infinity;
   }
 
   move(player) {
     // move towards Shina
     let direction = p5.Vector.sub(player.pos, this.pos);
     direction.normalize();
+
     direction.mult(this.speed);
     this.pos.add(direction);
 
@@ -380,6 +398,9 @@ class Enemy {
     rotate(angle);
     image(this.img, 0, 0, this.dim.x, this.dim.y);
     pop();
+
+
+
   }
 
   checkPlayerCollision(player) {
@@ -396,10 +417,8 @@ class Enemy {
 
     if (hit) {
       // deal dmg to shina
-      if (ms - this.lastDamageTime >= this.damageCooldown) {
-        player.takeDamage(this.damage);
-        this.lastDamageTime = ms;
-      }
+      player.takeDamage(this.damage);
+    
 
       // eliminate self on impact with shina
       let index = globalThis.enemies.indexOf(this);
@@ -422,6 +441,8 @@ class Enemy {
     for (let i = globalThis.enemies.length - 1; i >= 0; i--) {
       globalThis.enemies[i].move(globalThis.players[0]);
     }
+
+
   }
 }
 
@@ -440,7 +461,7 @@ function draw() {
     gameRunning();
 
     Player.updateAll();
-    Apple.updateAll();
+    Projectile.updateAll();
     Enemy.updateAll();
 
 
