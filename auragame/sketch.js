@@ -27,7 +27,7 @@ const ENEMY_TYPES = {
     damage: 5,
     speed: 2,
     health: 5,
-    hitboxSize: 30,
+    hitboxSize: 40,
     imageSize: 100,
     damageCooldown: 500
   },
@@ -67,7 +67,7 @@ let playButtonData = {
 
 globalThis.players = [];
 globalThis.apples = [];
-globalThis.skeletons = [];
+globalThis.enemies = [];
 
 // load assets
 async function loadAssets() {
@@ -135,8 +135,8 @@ class Apple {
   }
 
   checkCollision() {
-    for (let i = globalThis.skeletons.length - 1; i >= 0; i--) {
-      let enemy = globalThis.skeletons[i];
+    for (let i = globalThis.enemies.length - 1; i >= 0; i--) {
+      let enemy = globalThis.enemies[i];
 
       let appleSize = 30;
       let enemySize = enemy.hitboxSize;
@@ -149,7 +149,7 @@ class Apple {
 
       if (hit) {
         // remove enemy and apple
-        globalThis.skeletons[i].health -= APPLEDMG;
+        enemy.health -= APPLEDMG;
         let appleIndex = globalThis.apples.indexOf(this);
 
         if (appleIndex !== -1) {
@@ -157,8 +157,8 @@ class Apple {
         }
 
   
-        if (globalThis.skeletons[i].health <= 0) {
-          globalThis.skeletons.splice(i, 1);
+        if (globalThis.enemies[i].health <= 0) {
+          globalThis.enemies.splice(i, 1);
 
           if (appleIndex !== -1) {
             globalThis.apples.splice(appleIndex, 1);
@@ -402,15 +402,15 @@ class Enemy {
       }
 
       // eliminate self on impact with shina
-      let index = globalThis.skeletons.indexOf(this);
+      let index = globalThis.enemies.indexOf(this);
 
       if (index !== -1) {
-        globalThis.skeletons.splice(index, 1);
+        globalThis.enemies.splice(index, 1);
       }
 
       return true;
     }
-
+    
     return false;
   }
 
@@ -419,8 +419,8 @@ class Enemy {
       return;
     }
 
-    for (let i = globalThis.skeletons.length - 1; i >= 0; i--) {
-      globalThis.skeletons[i].move(globalThis.players[0]);
+    for (let i = globalThis.enemies.length - 1; i >= 0; i--) {
+      globalThis.enemies[i].move(globalThis.players[0]);
     }
   }
 }
@@ -442,6 +442,10 @@ function draw() {
     Player.updateAll();
     Apple.updateAll();
     Enemy.updateAll();
+
+
+
+
   }
 }
 
@@ -509,7 +513,7 @@ function resetGame() {
   lastAppleShot = 0;
 
   globalThis.apples = [];
-  globalThis.skeletons = [];
+  globalThis.enemies = [];
 
   // reset player
   if (globalThis.players.length > 0) {
@@ -523,15 +527,15 @@ function resetGame() {
   lastSkeletonSpawn = millis();
 
   let skeleton = new Enemy("skeleton", skeletonImg);
-  globalThis.skeletons.push(skeleton);
+  globalThis.enemies.push(skeleton);
 }
 
 // enemy spawning
 function gameRunning() {
   if (ms - lastSkeletonSpawn >= SPAWN_INTERVAL) {
-    if (globalThis.skeletons.length < MAX_SKELETONS) {
+    if (globalThis.enemies.length < MAX_SKELETONS) {
       let skeleton = new Enemy("skeleton", skeletonImg);
-      globalThis.skeletons.push(skeleton);
+      globalThis.enemies.push(skeleton);
     }
 
     lastSkeletonSpawn = ms;
