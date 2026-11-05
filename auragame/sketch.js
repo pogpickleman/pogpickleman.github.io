@@ -23,26 +23,27 @@ const MAX_SKELETONS = 10;
 const ENEMY_TYPES = {
   skeleton: {
     damage: 5,
-    speed: 2,
-    health: 5,
+    speed: 1,
+    health: 1,
     hitboxSize: 40,
     imageSize: 100,
   },
 
   bat: {
     damage: 5,
-    speed: 5,
-    health: 1,
+    speed: 2,
+    health: 2,
     hitboxSize: 30,
     imageSize: 100,
+    abilityCooldown: 500,
   }
 };
 
 const PROJECTILES = {
   apple: {
-    speed: 25,
-    damage: 3,
-    delay: 400,
+    speed: 10,
+    damage: 1,
+    delay: 40,
     imageSize: 100,
   }
 };
@@ -54,6 +55,7 @@ let gameState = MENU;
 let shina;
 let appleImg;
 let skeletonImg;
+let batImg;
 let song;
 let font;
 
@@ -80,6 +82,7 @@ async function loadAssets() {
   shina = await loadImage("assets/imgs/shina.png");
   appleImg = await loadImage("assets/imgs/apple.png");
   skeletonImg = await loadImage("assets/imgs/skeleton.png");
+  batImg = await loadImage("assets/imgs/bat.png");
 
   song = await loadSound("assets/music/title_theme.mp3");
   font = await loadFont("assets/static/NotoSans-Bold.ttf");
@@ -154,7 +157,7 @@ class Projectile {
   checkCollision() {
     for (let i = globalThis.enemies.length - 1; i >= 0; i--) {
       let enemy = globalThis.enemies[i];
-
+      let thisHit = false;
       let appleSize = 30;
       let enemySize = enemy.hitboxSize;
 
@@ -171,13 +174,14 @@ class Projectile {
 
         if (appleIndex !== -1) {
           globalThis.apples.splice(appleIndex, 1);
+          thisHit = true;
         }
 
   
         if (globalThis.enemies[i].health <= 0) {
           globalThis.enemies.splice(i, 1);
 
-          if (appleIndex !== -1) {
+          if (appleIndex !== -1 && thisHit === false) {
             globalThis.apples.splice(appleIndex, 1);
           }
 
@@ -344,6 +348,7 @@ class Enemy {
     this.type = type;
     this.settings = ENEMY_TYPES[type];
     this.img = image;
+    this.cooldown = this.settings.abilityCooldown;
 
     // spawn from a random edge
     let side = floor(random(4));
@@ -429,9 +434,17 @@ class Enemy {
 
       return true;
     }
-    
     return false;
   }
+
+  ability() {
+    if (this.type === "bat") {
+
+
+    }
+
+  }
+
 
   static updateAll() {
     if (globalThis.players.length === 0) {
@@ -440,9 +453,8 @@ class Enemy {
 
     for (let i = globalThis.enemies.length - 1; i >= 0; i--) {
       globalThis.enemies[i].move(globalThis.players[0]);
+      globalThis.enemies[i].ability();
     }
-
-
   }
 }
 
@@ -455,17 +467,12 @@ function draw() {
   }
   else if (gameState === RUNNING) {
     greenBackdrop();
-
     ms = millis();
-
     gameRunning();
 
     Player.updateAll();
     Projectile.updateAll();
     Enemy.updateAll();
-
-
-
 
   }
 }
@@ -522,6 +529,7 @@ function mousePressed() {
   ) {
     resetGame();
     gameState = RUNNING;
+
   }
 }
 
@@ -547,8 +555,8 @@ function resetGame() {
 
   lastSkeletonSpawn = millis();
 
-  let skeleton = new Enemy("skeleton", skeletonImg);
-  globalThis.enemies.push(skeleton);
+  let bat = new Enemy("bat", batImg);
+  globalThis.enemies.push(bat);
 }
 
 // enemy spawning
