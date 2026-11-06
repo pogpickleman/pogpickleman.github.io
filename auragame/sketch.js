@@ -36,7 +36,17 @@ const ENEMY_TYPES = {
     hitboxSize: 30,
     imageSize: 100,
     abilityCooldown: 500,
-  }
+    lastAbility: 0,
+  },
+
+  nurikabe: {
+    damage: 5,
+    speed: 2,
+    health: 2,
+    hitboxSize: 30,
+    imageSize: 100,
+    abilityCooldown: 500,
+  },
 };
 
 const PROJECTILES = {
@@ -45,10 +55,9 @@ const PROJECTILES = {
     damage: 1,
     delay: 40,
     imageSize: 100,
+    bounce: 1,
   }
 };
-
-
 
 let gameState = MENU;
 
@@ -62,6 +71,7 @@ let font;
 let ms = 0;
 let lastAppleShot = 0;
 let lastSkeletonSpawn = 0;
+
 
 let playButtonData = {
   x: 0,
@@ -108,6 +118,7 @@ class Projectile {
     this.type = type;
     this.settings = PROJECTILES[type];
     this.img = image;
+    this.bounce = this.settings.bounce;
  
 
     this.dim = createVector(
@@ -152,6 +163,9 @@ class Projectile {
         globalThis.apples.splice(index, 1);
       }
     }
+
+
+
   }
 
   checkCollision() {
@@ -349,6 +363,7 @@ class Enemy {
     this.settings = ENEMY_TYPES[type];
     this.img = image;
     this.cooldown = this.settings.abilityCooldown;
+    this.lastAbility = this.settings.lastAbility;
 
     // spawn from a random edge
     let side = floor(random(4));
@@ -439,11 +454,14 @@ class Enemy {
 
   ability() {
     if (this.type === "bat") {
-
-
+      if (ms - this.lastAbility >= this.cooldown) {
+        this.lastAbility = ms;
+        this.speed += 0.5;
+        this.damage += 0.5;
+      }
     }
-
   }
+
 
 
   static updateAll() {
@@ -453,6 +471,7 @@ class Enemy {
 
     for (let i = globalThis.enemies.length - 1; i >= 0; i--) {
       globalThis.enemies[i].move(globalThis.players[0]);
+      
       globalThis.enemies[i].ability();
     }
   }
@@ -473,7 +492,6 @@ function draw() {
     Player.updateAll();
     Projectile.updateAll();
     Enemy.updateAll();
-
   }
 }
 

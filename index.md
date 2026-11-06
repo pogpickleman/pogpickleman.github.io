@@ -11,6 +11,8 @@
 - [Collision Library Demo](09-collision)
 - [Grid Demo](12-grid)
 - [Rectangular Grid](13-rect-grid)
+- [game of life](14-life)
+- [Character in Grid](15-character)
 
 ## Projects 
 - [Interactive Scene](auragame)
