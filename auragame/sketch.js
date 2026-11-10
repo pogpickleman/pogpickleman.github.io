@@ -22,7 +22,7 @@ const MAX_SKELETONS = 10;
 // enemy types
 const ENEMY_TYPES = {
   skeleton: {
-    damage: 5,
+    damage: 2,
     speed: 1,
     health: 1,
     hitboxSize: 40,
@@ -30,7 +30,7 @@ const ENEMY_TYPES = {
   },
 
   bat: {
-    damage: 5,
+    damage: 2,
     speed: 2,
     health: 2,
     hitboxSize: 30,
@@ -65,6 +65,7 @@ let shina;
 let appleImg;
 let skeletonImg;
 let batImg;
+let nurikabeImg;
 let song;
 let font;
 
@@ -93,6 +94,7 @@ async function loadAssets() {
   appleImg = await loadImage("assets/imgs/apple.png");
   skeletonImg = await loadImage("assets/imgs/skeleton.png");
   batImg = await loadImage("assets/imgs/bat.png");
+  nurikabeImg = await loadImage("assets/imgs/nurikabe.png");
 
   song = await loadSound("assets/music/title_theme.mp3");
   font = await loadFont("assets/static/NotoSans-Bold.ttf");
@@ -138,6 +140,7 @@ class Projectile {
     this.angle =
       atan2(mouseY - this.pos.y, mouseX - this.pos.x) + HALF_PI;
   }
+
 
   move() {
     this.pos.add(this.velocity);
@@ -457,7 +460,7 @@ class Enemy {
       if (ms - this.lastAbility >= this.cooldown) {
         this.lastAbility = ms;
         this.speed += 0.5;
-        this.damage += 0.5;
+        this.damage += 0.2; 
       }
     }
   }
@@ -474,6 +477,7 @@ class Enemy {
       
       globalThis.enemies[i].ability();
     }
+
   }
 }
 
