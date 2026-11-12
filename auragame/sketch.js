@@ -39,6 +39,14 @@ const ENEMY_TYPES = {
     lastAbility: 0,
   },
 
+  soldier: {
+    damage: 2,
+    speed: 0.5,
+    health: 5,
+    hitboxSize: 40,
+    imageSize: 100,
+  },
+
   nurikabe: {
     damage: 5,
     speed: 2,
@@ -47,6 +55,18 @@ const ENEMY_TYPES = {
     imageSize: 100,
     abilityCooldown: 500,
   },
+
+  dog: {
+    damage: 5,
+    speed: 1.5,
+    health: 3,
+    hitboxSize: 30,
+    imageSize: 100,
+    abilityCooldown: 1000,
+  },
+
+
+
 };
 
 const PROJECTILES = {

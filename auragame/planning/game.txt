@@ -16,14 +16,15 @@ jellyfish - grabs you
 chilly orc - freezes you
 dinosaur - shoots laser to blind you
 
-
-
 creaking - immune to dmg until you hover over it, stopping it in place too
 repear - puts you to 1hp and goes invisible
 dragon - shoots fireballs towards you
 phoenix - shoots homing firebals and summons fire bombs on you
 dummy - returns your projectiles
 
-
 snake - shoots lingering poison projectiles
 mushroom - throws an explosive mushroom upon death
+ghost - haunts your items, disabling them
+mimic - reduces cash if not eliminated
+scorpion - deadly sting attack
+spider - lobs cobwebs
