@@ -65,8 +65,6 @@ const ENEMY_TYPES = {
     abilityCooldown: 1000,
   },
 
-
-
 };
 
 const PROJECTILES = {
@@ -86,8 +84,10 @@ let appleImg;
 let skeletonImg;
 let batImg;
 let nurikabeImg;
-let song;
 let font;
+let holocureTitle;
+let playlist;
+
 
 let ms = 0;
 let lastAppleShot = 0;
@@ -116,9 +116,13 @@ async function loadAssets() {
   batImg = await loadImage("assets/imgs/bat.png");
   nurikabeImg = await loadImage("assets/imgs/nurikabe.png");
 
-  song = await loadSound("assets/music/title_theme.mp3");
   font = await loadFont("assets/static/NotoSans-Bold.ttf");
   textFont(font);
+
+  holocureTitle = await loadSound("assets/music/holocure_title.mp3");
+  playlist = [holocureTitle];
+
+
 }
 
 // setup screen
@@ -132,6 +136,7 @@ async function setup() {
 
   let player = new Player();
   globalThis.players.push(player);
+
 }
 
 // projectile class
@@ -516,6 +521,9 @@ function draw() {
     Player.updateAll();
     Projectile.updateAll();
     Enemy.updateAll();
+
+
+
   }
 }
 
@@ -629,4 +637,11 @@ function greenBackdrop() {
       rect(x, y, 50, 50);
     }
   }
+}
+
+function playMusic() {
+  
+  let randomSong = Math.floor(Math.random() * playlist.length);
+  let song = playlist[randomSong];
+  
 }

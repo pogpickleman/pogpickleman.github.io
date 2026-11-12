@@ -13,6 +13,8 @@
 - [Rectangular Grid](13-rect-grid)
 - [game of life](14-life)
 - [Character in Grid](15-character)
+- [setTimeout](16-set-timeout)
+- [setInverval](17-set-interval)
 
 ## Projects 
 - [Interactive Scene](auragame)
