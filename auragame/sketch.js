@@ -54,16 +54,23 @@ const ENEMY_TYPES = {
     hitboxSize: 30,
     imageSize: 100,
     abilityCooldown: 500,
+    lastAbility: 0,
+
   },
 
   dog: {
     damage: 5,
-    speed: 1.5,
+    speed: 0.2,
     health: 3,
     hitboxSize: 30,
     imageSize: 100,
     abilityCooldown: 1000,
+    lastAbility: 0,
+
   },
+
+
+
 
 };
 
@@ -162,8 +169,7 @@ class Projectile {
     this.velocity.normalize();
     this.velocity.mult(this.speed);
 
-    this.angle =
-      atan2(mouseY - this.pos.y, mouseX - this.pos.x) + HALF_PI;
+    this.angle = atan2(mouseY - this.pos.y, mouseX - this.pos.x) + HALF_PI;
   }
 
 
@@ -447,8 +453,6 @@ class Enemy {
     image(this.img, 0, 0, this.dim.x, this.dim.y);
     pop();
 
-
-
   }
 
   checkPlayerCollision(player) {
@@ -466,7 +470,7 @@ class Enemy {
     if (hit) {
       // deal dmg to shina
       player.takeDamage(this.damage);
-    
+
 
       // eliminate self on impact with shina
       let index = globalThis.enemies.indexOf(this);
@@ -480,7 +484,7 @@ class Enemy {
     return false;
   }
 
-  ability() {
+  ability(player) {
     if (this.type === "bat") {
       if (ms - this.lastAbility >= this.cooldown) {
         this.lastAbility = ms;
@@ -488,9 +492,38 @@ class Enemy {
         this.damage += 0.2; 
       }
     }
+    else if (this.type === "dog") {
+      if (ms - this.lastAbility >= this.cooldown) {
+        this.lastAbility = ms;
+        
+        let direction = p5.Vector.sub(player.pos, this.pos);
+        direction.normalize();
+
+        direction.mult(this.speed);
+        this.pos.add(direction);
+
+        
+
+
+      }
+
+      // else if (this.type === "") {
+      //   if (ms - this.lastAbility >= this.cooldown) {
+      //     this.lastAbility = ms;
+          
+      //     let direction = p5.Vector.sub(player.pos, this.pos);
+
+      //     direction.mult(1.4);
+
+      //     this.pos.add(direction);
+      // }
+
+
+
+    }
+
+
   }
-
-
 
   static updateAll() {
     if (globalThis.players.length === 0) {
@@ -500,11 +533,28 @@ class Enemy {
     for (let i = globalThis.enemies.length - 1; i >= 0; i--) {
       globalThis.enemies[i].move(globalThis.players[0]);
       
-      globalThis.enemies[i].ability();
+      if  (globalThis.enemies[i]) {
+        globalThis.enemies[i].ability(globalThis.players[0]);
+      }
+
     }
 
   }
 }
+
+class SpawnEnemies {
+  constructor() {
+    this.activePool = [];
+    this.waveType = [];
+    this.spawnDelay = 0;
+    this.budget = 0;
+    this.maxEnemies = 0;
+    this.EnemyDensity = 0;
+  }
+
+
+}
+
 
 // draw loop
 function draw() {
@@ -521,8 +571,6 @@ function draw() {
     Player.updateAll();
     Projectile.updateAll();
     Enemy.updateAll();
-
-
 
   }
 }
@@ -605,7 +653,7 @@ function resetGame() {
 
   lastSkeletonSpawn = millis();
 
-  let bat = new Enemy("bat", batImg);
+  let bat = new Enemy("dog", batImg);
   globalThis.enemies.push(bat);
 }
 
