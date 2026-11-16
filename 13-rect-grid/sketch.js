@@ -6,9 +6,10 @@ let grid;
 
 
 async function setup() {
-  createCanvas(windowWidth, windowHeight);
-  rows = Math.floor(height/CELL_SIZE);
-  cols = Math.floor(width/CELL_SIZE);
+  rows = Math.floor(windowHeight * 0.85/CELL_SIZE);
+  cols = Math.floor(windowWidth * 0.85/CELL_SIZE);
+  let canvas = createCanvas(cols * CELL_SIZE, rows * CELL_SIZE);
+  canvas.parent('canvas-container');
 
   grid = generateRandomGrid(cols, rows);
 
