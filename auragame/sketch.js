@@ -66,10 +66,17 @@ const ENEMY_TYPES = {
     imageSize: 100,
     abilityCooldown: 1000,
     lastAbility: 0,
-
   },
 
-
+  worm: {
+    damage: 5,
+    speed: 2,
+    health: 3,
+    hitboxSize: 30,
+    imageSize: 100,
+    abilityCooldown: 1000,
+    lastAbility: 0,
+  },
 
 
 };
@@ -575,7 +582,7 @@ function draw() {
   }
 }
 
-// main menu
+// main menu 
 function mainMenu() {
   playButton();
   titleText();
@@ -627,7 +634,6 @@ function mousePressed() {
   ) {
     resetGame();
     gameState = RUNNING;
-
   }
 }
 
