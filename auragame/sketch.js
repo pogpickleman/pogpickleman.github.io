@@ -42,9 +42,32 @@ const ENEMY_TYPES = {
   soldier: {
     damage: 2,
     speed: 0.5,
-    health: 5,
+    health: 10,
     hitboxSize: 40,
     imageSize: 100,
+  },
+
+  slime: {
+    damage: 5,
+    speed: 0.2,
+    health: 3,
+    hitboxSize: 30,
+    imageSize: 100,
+    abilityCooldown: 1000,
+    lastAbility: 0,
+  },
+
+
+
+
+  dog: {
+    damage: 5,
+    speed: 0.2,
+    health: 3,
+    hitboxSize: 30,
+    imageSize: 100,
+    abilityCooldown: 1000,
+    lastAbility: 0,
   },
 
   nurikabe: {
@@ -56,16 +79,6 @@ const ENEMY_TYPES = {
     abilityCooldown: 500,
     lastAbility: 0,
 
-  },
-
-  dog: {
-    damage: 5,
-    speed: 0.2,
-    health: 3,
-    hitboxSize: 30,
-    imageSize: 100,
-    abilityCooldown: 1000,
-    lastAbility: 0,
   },
 
   worm: {
@@ -129,6 +142,7 @@ async function loadAssets() {
   skeletonImg = await loadImage("assets/imgs/skeleton.png");
   batImg = await loadImage("assets/imgs/bat.png");
   nurikabeImg = await loadImage("assets/imgs/nurikabe.png");
+  slimeImg = await loadImage("assets/imgs/slime.png");
 
   font = await loadFont("assets/static/NotoSans-Bold.ttf");
   textFont(font);
@@ -205,8 +219,6 @@ class Projectile {
       }
     }
 
-
-
   }
 
   checkCollision() {
@@ -239,7 +251,6 @@ class Projectile {
           if (appleIndex !== -1 && thisHit === false) {
             globalThis.apples.splice(appleIndex, 1);
           }
-
 
         }
       }
@@ -499,37 +510,17 @@ class Enemy {
         this.damage += 0.2; 
       }
     }
-    else if (this.type === "dog") {
+    else if (this.type === "slime") {
       if (ms - this.lastAbility >= this.cooldown) {
         this.lastAbility = ms;
         
         let direction = p5.Vector.sub(player.pos, this.pos);
-        direction.normalize();
+        direction.mult(1.4);
 
-        direction.mult(this.speed);
         this.pos.add(direction);
 
-        
-
-
       }
-
-      // else if (this.type === "") {
-      //   if (ms - this.lastAbility >= this.cooldown) {
-      //     this.lastAbility = ms;
-          
-      //     let direction = p5.Vector.sub(player.pos, this.pos);
-
-      //     direction.mult(1.4);
-
-      //     this.pos.add(direction);
-      // }
-
-
-
     }
-
-
   }
 
   static updateAll() {
@@ -553,15 +544,38 @@ class SpawnEnemies {
   constructor() {
     this.activePool = [];
     this.waveType = [];
-    this.spawnDelay = 0;
-    this.budget = 0;
+    this.budget = 10;
+    this.spawnDelay = 500;
     this.maxEnemies = 0;
     this.EnemyDensity = 0;
+    this.waveInterval = 10000;
+    this.lastWave = 0;
   }
 
+  wave() {
+    if (ms - this.lastWave >= this.waveInterval) {
+      this.spawnEnemies();
+    }
+    console.log(ms, this.lastWave);
+
+  }
+
+  spawnEnemies() {
+    if (ms - lastSkeletonSpawn >= this.spawnDelay) {
+      if (globalThis.enemies.length < MAX_SKELETONS && this.budget > 5) {
+        let skeleton = new Enemy("skeleton", skeletonImg);
+        globalThis.enemies.push(skeleton);
+      }
+      lastSkeletonSpawn = ms;
+      this.budget--;
+    }
+    if (this.budget <= 0) {
+      this.lastWave = ms;
+    }
+
+  }
 
 }
-
 
 // draw loop
 function draw() {
@@ -578,6 +592,7 @@ function draw() {
     Player.updateAll();
     Projectile.updateAll();
     Enemy.updateAll();
+
 
   }
 }
@@ -659,20 +674,12 @@ function resetGame() {
 
   lastSkeletonSpawn = millis();
 
-  let bat = new Enemy("dog", batImg);
-  globalThis.enemies.push(bat);
 }
 
 // enemy spawning
 function gameRunning() {
-  if (ms - lastSkeletonSpawn >= SPAWN_INTERVAL) {
-    if (globalThis.enemies.length < MAX_SKELETONS) {
-      let skeleton = new Enemy("skeleton", skeletonImg);
-      globalThis.enemies.push(skeleton);
-    }
-
-    lastSkeletonSpawn = ms;
-  }
+  let enemySpawns = new SpawnEnemies;
+  enemySpawns.wave();
 }
 
 // checkerboard background
