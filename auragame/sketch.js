@@ -119,7 +119,7 @@ let playlist;
 let ms = 0;
 let lastAppleShot = 0;
 let lastSkeletonSpawn = 0;
-
+let enemySpawns;
 
 let playButtonData = {
   x: 0,
@@ -164,7 +164,7 @@ async function setup() {
 
   let player = new Player();
   globalThis.players.push(player);
-
+  enemySpawns = new SpawnEnemies;
 }
 
 // projectile class
@@ -544,41 +544,48 @@ class SpawnEnemies {
   constructor() {
     this.activePool = [];
     this.waveType = [];
-    this.budget = 10;
+    this.budget = 3;
+    this.currentBudget = 0;
     this.spawnDelay = 500;
     this.maxEnemies = 0;
     this.EnemyDensity = 0;
     this.waveInterval = 10000;
     this.lastWave = 0;
+    this.round = 0;
+    this.isSpawning = false;
   }
 
   wave() {
-    if (ms - this.lastWave >= this.waveInterval) {
+    if (ms - this.lastWave >= this.waveInterval && !this.isSpawning) {
+      this.currentBudget = this.budget;
+      this.isSpawning = true;
+      this.round++;
+    }
+    if (this.isSpawning) {
       this.spawnEnemies();
     }
-    console.log(ms, this.lastWave);
-
   }
 
   spawnEnemies() {
-    if (ms - lastSkeletonSpawn >= this.spawnDelay) {
-      if (globalThis.enemies.length < MAX_SKELETONS && this.budget > 5) {
-        let skeleton = new Enemy("skeleton", skeletonImg);
-        globalThis.enemies.push(skeleton);
-      }
+    if (this.currentBudget > 0 && ms - lastSkeletonSpawn >= this.spawnDelay) {
+      let skeleton = new Enemy("skeleton", skeletonImg);
+      globalThis.enemies.push(skeleton);
+      this.currentBudget--;
       lastSkeletonSpawn = ms;
-      this.budget--;
     }
-    if (this.budget <= 0) {
+
+    if (this.currentBudget <= 0) {
+      this.isSpawning = false;
       this.lastWave = ms;
     }
-
   }
-
 }
 
 // draw loop
 function draw() {
+  console.log(enemySpawns.isSpawning);
+
+
   background(255);
 
   if (gameState === MENU) {
@@ -678,8 +685,8 @@ function resetGame() {
 
 // enemy spawning
 function gameRunning() {
-  let enemySpawns = new SpawnEnemies;
   enemySpawns.wave();
+
 }
 
 // checkerboard background
