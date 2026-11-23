@@ -3,9 +3,9 @@
 // IK
 // 11/1/2026
 //
-// Object notation project
+// 2d Arrays Project
 // Extra for Experts:
-// Using classes to store the player, projectiles, and enemies
+// budget-and-weight type spawning algorithim in the SpawnEnemies class. 
 // WIP game!
 
 // game states
@@ -18,6 +18,20 @@ const PLAYER_MAX_HEALTH = 100;
 // enemy spawning settings
 const SPAWN_INTERVAL = 2000;
 const MAX_SKELETONS = 10;
+const ENEMY_SPAWN_CONFIG = {
+  skeleton: { cost: 1, weight: 35, unlockRound: 1, img: () => skeletonImg},
+  bat:      { cost: 2, weight: 25, unlockRound: 1, img: () => batImg},
+  slime:    { cost: 3, weight: 15, unlockRound: 2, img: () => slimeImg},
+  dog:      { cost: 3, weight: 15, unlockRound: 2, img: () => dogImg},
+  nurikabe: { cost: 4, weight: 10, unlockRound: 3, img: () => nurikabeImg},
+  soldier:  { cost: 6, weight: 10, unlockRound: 4, img: () => soldierImg},
+};
+
+// grid for nurikabe
+const GRID_SIZE = 50
+let nurikabeGrid = [];
+let gridColumns;
+let gridRows;
 
 // enemy types
 const ENEMY_TYPES = {
@@ -57,12 +71,9 @@ const ENEMY_TYPES = {
     lastAbility: 0,
   },
 
-
-
-
   dog: {
     damage: 5,
-    speed: 0.2,
+    speed: 0.4,
     health: 3,
     hitboxSize: 30,
     imageSize: 100,
@@ -71,8 +82,8 @@ const ENEMY_TYPES = {
   },
 
   nurikabe: {
-    damage: 5,
-    speed: 2,
+    damage: 10,
+    speed: 3,
     health: 2,
     hitboxSize: 30,
     imageSize: 100,
@@ -104,17 +115,20 @@ const PROJECTILES = {
   }
 };
 
+// game variables
 let gameState = MENU;
-
 let shina;
 let appleImg;
 let skeletonImg;
 let batImg;
+let slimeImg;
+let dogImg;
+let soldierImg
 let nurikabeImg;
+
 let font;
 let holocureTitle;
 let playlist;
-
 
 let ms = 0;
 let lastAppleShot = 0;
@@ -139,8 +153,11 @@ globalThis.enemies = [];
 async function loadAssets() {
   shina = await loadImage("assets/imgs/shina.png");
   appleImg = await loadImage("assets/imgs/apple.png");
+
   skeletonImg = await loadImage("assets/imgs/skeleton.png");
   batImg = await loadImage("assets/imgs/bat.png");
+  soldierImg = await loadImage("assets/imgs/soldier.png");
+  dogImg = await loadImage("assets/imgs/dog.png");
   nurikabeImg = await loadImage("assets/imgs/nurikabe.png");
   slimeImg = await loadImage("assets/imgs/slime.png");
 
@@ -149,8 +166,6 @@ async function loadAssets() {
 
   holocureTitle = await loadSound("assets/music/holocure_title.mp3");
   playlist = [holocureTitle];
-
-
 }
 
 // setup screen
@@ -175,14 +190,13 @@ class Projectile {
     this.img = image;
     this.bounce = this.settings.bounce;
  
-
     this.dim = createVector(
       this.settings.imageSize,
       this.settings.imageSize
     );
 
+    // determine where the projectile should move
     this.speed = this.settings.speed;
-
     this.pos = createVector(player.pos.x, player.pos.y);
 
     this.velocity = createVector(mouseX, mouseY);
@@ -193,10 +207,9 @@ class Projectile {
     this.angle = atan2(mouseY - this.pos.y, mouseX - this.pos.x) + HALF_PI;
   }
 
-
   move() {
+    // update projectile along angle
     this.pos.add(this.velocity);
-
     this.checkCollision();
 
     push();
@@ -222,6 +235,7 @@ class Projectile {
   }
 
   checkCollision() {
+    // check for collision with enemy
     for (let i = globalThis.enemies.length - 1; i >= 0; i--) {
       let enemy = globalThis.enemies[i];
       let thisHit = false;
@@ -234,8 +248,8 @@ class Projectile {
         this.pos.y + appleSize / 2 > enemy.pos.y - enemySize / 2 &&
         this.pos.y - appleSize / 2 < enemy.pos.y + enemySize / 2;
 
+      // deal dmg upon hit and remove if 0 hp
       if (hit) {
-        // remove enemy and projectile
         enemy.health -= PROJECTILES.apple.damage;
         let appleIndex = globalThis.apples.indexOf(this);
 
@@ -244,8 +258,8 @@ class Projectile {
           thisHit = true;
         }
 
-  
         if (globalThis.enemies[i].health <= 0) {
+          globalThis.enemies[i].removeFromGrid();
           globalThis.enemies.splice(i, 1);
 
           if (appleIndex !== -1 && thisHit === false) {
@@ -417,9 +431,8 @@ class Enemy {
     this.cooldown = this.settings.abilityCooldown;
     this.lastAbility = this.settings.lastAbility;
 
-    // spawn from a random edge
+    // random spawning
     let side = floor(random(4));
-
     if (side === 0) {
       this.pos = createVector(random(width), 0);
     }
@@ -443,22 +456,48 @@ class Enemy {
     this.damage = this.settings.damage;
     this.health = this.settings.health;
 
-  }
 
-  move(player) {
-    // move towards Shina
-    let direction = p5.Vector.sub(player.pos, this.pos);
-    direction.normalize();
+    if (this.type === "nurikabe") {
+      this.moveCooldown = 250;
+      this.lastMove = 0;
 
-    direction.mult(this.speed);
-    this.pos.add(direction);
+      // convert pixels to grid pos
+      this.gridX = constrain(round(this.pos.x / GRID_SIZE), 0, gridColumns - 1);
+      this.gridY = constrain(round(this.pos.y / GRID_SIZE), 0, gridRows - 1);
 
-    // check collision with shina
-    if (this.checkPlayerCollision(player)) {
-      return;
+      // check if cell is occupied
+      if (nurikabeGrid[this.gridY] && nurikabeGrid[this.gridY][this.gridX] === 1) {
+        for (let r = 0; r < gridRows; r++) {
+          let placed = false;
+          for (let c = 0; c < gridColumns; c++) {
+            if (nurikabeGrid[r][c] === 0) {
+              this.gridX = c;
+              this.gridY = r;
+              placed = true;
+              break;
+            }
+          }
+          if (placed) break;
+        }
+      }
+
+      // mark cell as occupied
+      if (nurikabeGrid[this.gridY]) {
+        nurikabeGrid[this.gridY][this.gridX] = 1;
+      }
+      this.pos.set(this.gridX * GRID_SIZE, this.gridY * GRID_SIZE);
     }
 
-    // rotate towards Shina
+    else if (this.type === "dog") {
+      this.speed = this.settings.speed;
+      this.baseSpeed = this.settings.speed;
+      this.isDogSprinting = false;
+    }
+
+  }
+
+  drawSprite(player) {
+    // draw enemy img 
     let angle =
       atan2(
         player.pos.y - this.pos.y,
@@ -470,10 +509,25 @@ class Enemy {
     rotate(angle);
     image(this.img, 0, 0, this.dim.x, this.dim.y);
     pop();
+  }
 
+  move(player) {
+    // move enemy towards player
+    let direction = p5.Vector.sub(player.pos, this.pos);
+    direction.normalize();
+
+    direction.mult(this.speed);
+    this.pos.add(direction);
+
+    if (this.checkPlayerCollision(player)) {
+      return;
+    }
+
+    this.drawSprite(player);
   }
 
   checkPlayerCollision(player) {
+    // check for collisions with player and deal dmg
     let playerHitbox = 50;
 
     let halfEnemy = this.hitboxSize / 2;
@@ -486,14 +540,12 @@ class Enemy {
       this.pos.y - halfEnemy < player.pos.y + halfPlayer;
 
     if (hit) {
-      // deal dmg to shina
       player.takeDamage(this.damage);
 
-
-      // eliminate self on impact with shina
       let index = globalThis.enemies.indexOf(this);
 
       if (index !== -1) {
+        this.removeFromGrid();
         globalThis.enemies.splice(index, 1);
       }
 
@@ -504,88 +556,216 @@ class Enemy {
 
   ability(player) {
     if (this.type === "bat") {
+      // gain speed and dmg over time
       if (ms - this.lastAbility >= this.cooldown) {
         this.lastAbility = ms;
         this.speed += 0.5;
-        this.damage += 0.2; 
+        this.damage += 0.2;
       }
     }
     else if (this.type === "slime") {
+      // teleport behind player
       if (ms - this.lastAbility >= this.cooldown) {
         this.lastAbility = ms;
-        
+
         let direction = p5.Vector.sub(player.pos, this.pos);
         direction.mult(1.4);
 
         this.pos.add(direction);
+      }
+    }
+    else if (this.type === "dog") {
+      // gain and lose speed boost
+      if (ms - this.lastAbility >= this.cooldown) {
+        this.lastAbility = ms;
+        this.isDogSprinting = !this.isDogSprinting;
 
+        this.speed = this.isDogSprinting
+          ? this.baseSpeed * 10
+          : this.baseSpeed * 0.4;
       }
     }
   }
 
+  moveNurikabe(player) {
+    if (ms - this.lastMove < this.moveCooldown) {
+      return;
+    }
+
+    // dist from player to self in grid coords
+    let playerGridX = round(player.pos.x / GRID_SIZE);
+    let playerGridY = round(player.pos.y / GRID_SIZE);
+    let dx = playerGridX - this.gridX;
+    let dy = playerGridY - this.gridY;
+
+    // move along largest axis
+    let directions = [];
+
+    if (abs(dx) > abs(dy)) {
+      directions.push([Math.sign(dx), 0]);
+      directions.push([0, Math.sign(dy)]);
+    }
+    else {
+      directions.push([0, Math.sign(dy)]);
+      directions.push([Math.sign(dx), 0]);
+    }
+
+    // check for empty cells 
+    for (let direction of directions) {
+      let newX = this.gridX + direction[0];
+      let newY = this.gridY + direction[1];
+
+      // skip cells that are out of bounds
+      if (
+        newX < 0 || newX >= gridColumns ||
+        newY < 0 || newY >= gridRows
+      ) {
+        continue;
+      }
+
+      // leave previous cell
+      if (nurikabeGrid[newY][newX] === 0) {
+        nurikabeGrid[this.gridY][this.gridX] = 0;
+
+        // update and claim cell
+        this.gridX = newX;
+        this.gridY = newY;
+        nurikabeGrid[this.gridY][this.gridX] = 1;
+
+        this.pos.set(
+          this.gridX * GRID_SIZE,
+          this.gridY * GRID_SIZE
+        );
+
+        this.lastMove = ms;
+
+        break;
+      }
+    }
+  }
+
+  removeFromGrid() {
+    // clear nurikabe from grid
+    if (
+      this.type === "nurikabe" &&
+      nurikabeGrid[this.gridY] &&
+      nurikabeGrid[this.gridY][this.gridX] !== undefined
+    ) {
+      nurikabeGrid[this.gridY][this.gridX] = 0;
+    }
+  }
+
   static updateAll() {
+    // update enemies with their methods
     if (globalThis.players.length === 0) {
       return;
     }
 
+    let player = globalThis.players[0];
     for (let i = globalThis.enemies.length - 1; i >= 0; i--) {
-      globalThis.enemies[i].move(globalThis.players[0]);
-      
-      if  (globalThis.enemies[i]) {
-        globalThis.enemies[i].ability(globalThis.players[0]);
+      let enemy = globalThis.enemies[i];
+
+      if (enemy.type === "nurikabe") {
+        enemy.moveNurikabe(player);
+        if (globalThis.enemies[i] && !enemy.checkPlayerCollision(player)) {
+          enemy.drawSprite(player);
+        }
       }
-
+      else {
+        enemy.move(player);
+      }
+      if (globalThis.enemies[i]) {
+        globalThis.enemies[i].ability(player);
+      }
     }
-
   }
 }
 
 class SpawnEnemies {
   constructor() {
-    this.activePool = [];
-    this.waveType = [];
-    this.budget = 3;
+    // wave budget scaling settings
+    this.baseBudget = 4;
+    this.budgetPerRound = 2;
     this.currentBudget = 0;
+
+    // enemy pacing within rounds
     this.spawnDelay = 500;
-    this.maxEnemies = 0;
-    this.EnemyDensity = 0;
-    this.waveInterval = 10000;
-    this.lastWave = 0;
+    this.lastSpawnTime = 0;
+
+    // wave intervals
+    this.waveInterval = 3000; 
+    this.lastWave = -3000;  
     this.round = 0;
     this.isSpawning = false;
   }
 
   wave() {
-    if (ms - this.lastWave >= this.waveInterval && !this.isSpawning) {
-      this.currentBudget = this.budget;
-      this.isSpawning = true;
+    // spawn round if none is active
+    if (!this.isSpawning && ms - this.lastWave >= this.waveInterval) {
       this.round++;
+      this.currentBudget = this.baseBudget + (this.round - 1) * this.budgetPerRound;
+      this.isSpawning = true;
     }
     if (this.isSpawning) {
-      this.spawnEnemies();
+      this.spawnNextEnemy();
     }
   }
 
-  spawnEnemies() {
-    if (this.currentBudget > 0 && ms - lastSkeletonSpawn >= this.spawnDelay) {
-      let skeleton = new Enemy("skeleton", skeletonImg);
-      globalThis.enemies.push(skeleton);
-      this.currentBudget--;
-      lastSkeletonSpawn = ms;
+  getAffordablePool() {
+    const pool = [];
+
+    // only spawn enemies unlocked so far and fit with the budget
+    for (const [type, cfg] of Object.entries(ENEMY_SPAWN_CONFIG)) {
+      if (this.round >= cfg.unlockRound && cfg.cost <= this.currentBudget) {
+        pool.push({ type, ...cfg });
+      }
     }
 
-    if (this.currentBudget <= 0) {
+    return pool;
+  }
+
+  pickWeightedEnemy(pool) {
+    // pick enemy proportionally using cumulative weight subtraction
+    const totalWeight = pool.reduce((sum, item) => sum + item.weight, 0);
+    let roll = random(totalWeight);
+
+    for (const item of pool) {
+      roll -= item.weight;
+      if (roll <= 0) {
+        return item;
+      }
+    }
+
+    // fallback for rounding edge cases
+    return pool[pool.length - 1];
+  }
+
+  spawnNextEnemy() {
+    if (ms - this.lastSpawnTime < this.spawnDelay) {
+      return;
+    }
+
+    const pool = this.getAffordablePool();
+
+    // end wave when no affordable enemies are left
+    if (pool.length === 0) {
       this.isSpawning = false;
       this.lastWave = ms;
+      return;
     }
+
+    // create enemy, add to active list and deduct cost and reset spawn timer
+    const chosen = this.pickWeightedEnemy(pool);
+    const enemy = new Enemy(chosen.type, chosen.img());
+
+    globalThis.enemies.push(enemy);
+    this.currentBudget -= chosen.cost;
+    this.lastSpawnTime = ms;
   }
 }
 
 // draw loop
 function draw() {
-  console.log(enemySpawns.isSpawning);
-
-
   background(255);
 
   if (gameState === MENU) {
@@ -599,8 +779,6 @@ function draw() {
     Player.updateAll();
     Projectile.updateAll();
     Enemy.updateAll();
-
-
   }
 }
 
@@ -680,7 +858,7 @@ function resetGame() {
   }
 
   lastSkeletonSpawn = millis();
-
+  createNurikabeGrid();
 }
 
 // enemy spawning
@@ -707,9 +885,24 @@ function greenBackdrop() {
   }
 }
 
+// wip music function
 function playMusic() {
-  
   let randomSong = Math.floor(Math.random() * playlist.length);
   let song = playlist[randomSong];
-  
+}
+
+function createNurikabeGrid() {
+  // make grid dimensions along canvas
+  gridColumns = ceil(width / GRID_SIZE) + 1;
+  gridRows = ceil(height / GRID_SIZE) + 1;
+
+  nurikabeGrid = [];
+
+  // create empty 2d array
+  for (let row = 0; row < gridRows; row++) {
+    nurikabeGrid.push([]);
+    for (let col = 0; col < gridColumns; col++) {
+      nurikabeGrid[row].push(0);
+    }
+  }
 }
