@@ -28,7 +28,7 @@ const ENEMY_SPAWN_CONFIG = {
 };
 
 // grid for nurikabe
-const GRID_SIZE = 50
+const GRID_SIZE = 50;
 let nurikabeGrid = [];
 let gridColumns;
 let gridRows;
@@ -123,7 +123,7 @@ let skeletonImg;
 let batImg;
 let slimeImg;
 let dogImg;
-let soldierImg
+let soldierImg;
 let nurikabeImg;
 
 let font;
@@ -477,7 +477,9 @@ class Enemy {
               break;
             }
           }
-          if (placed) break;
+          if (placed) {
+            break;
+          }
         }
       }
 
