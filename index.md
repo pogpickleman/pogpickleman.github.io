@@ -15,6 +15,7 @@
 - [Character in Grid](15-character)
 - [setTimeout](16-set-timeout)
 - [setInverval](17-set-interval)
+- [fireworks](19-fireworks)
 
 ## Projects 
 - [Interactive Scene](auragame)
