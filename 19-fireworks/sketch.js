@@ -15,10 +15,12 @@ class Particle {
     this.y = y;
     this.dx = random(-5,5);
     this.dy = random(-5,5);
+
     this.ax = random (-0.5, 0.5);
     this.ay = random (-0.5, 0.5);
-    this.incx = random(0,1);
-    this.incy = random(0,1);
+
+    this.incx = random(0, 0.5);
+    this.incy = random(0, 0.5);
 
 
     this.diameter = 10;
@@ -38,13 +40,9 @@ class Particle {
     this.x += this.dx;
     this.y += this.dy;
 
-    if (this.incx === 0) {
-      this.dx += this.ax;
-    }
-    else {
-      this.dx -= this.ax;
-    }
+    this.dx += this.ax;
     this.dy += this.ay;
+
 
 
     this.opacity--;
@@ -52,7 +50,7 @@ class Particle {
 
   cull() {
     let index = theFireworks.indexOf(this);
-    if (this.opacity === 0 ||
+    if (this.opacity <= 0 ||
       this.x > width ||
       this.x < this.diameter ||
       this.y > height ||
